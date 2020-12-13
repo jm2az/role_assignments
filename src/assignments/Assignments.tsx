@@ -9,10 +9,13 @@ import {
   makeStyles,
   Theme,
 } from "@material-ui/core";
+import { validateEmail } from "../common/util/textUtil";
+import { Alert } from "@material-ui/lab";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
+      margin: "20px",
       display: "grid",
       gridTemplateColumns: "1fr 1fr",
       gridTemplateRows: "1fr 1fr",
@@ -43,10 +46,59 @@ interface PlayerAssignment {
   email: string;
 }
 
+interface MatchValidation {
+  valid: boolean;
+  errors: string[];
+}
+
+function validateMatches(
+  roles: RoleAssignment[],
+  players: PlayerAssignment[]
+): MatchValidation {
+  const errors = [];
+
+  const allRoleCountsNonnegative = roles.reduce(
+    (allNonNegative, currentRoleAssignment) =>
+      allNonNegative && currentRoleAssignment.count >= 0,
+    true
+  );
+  if (!allRoleCountsNonnegative) {
+    errors.push("Some role counts are negative");
+  }
+
+  const totalRoleSpots = roles.reduce(
+    (totalCount, currentRoleAssignment) =>
+      totalCount + currentRoleAssignment.count,
+    0
+  );
+  const totalPlayerCount = players.length;
+  if (totalRoleSpots !== totalPlayerCount) {
+    errors.push("Total role spots must match total player count");
+  }
+
+  const validEmails = players.reduce(
+    (allValidEmails, currentPlayerAssignment) =>
+      allValidEmails && validateEmail(currentPlayerAssignment.email),
+    true
+  );
+  if (!validEmails) {
+    errors.push("Some emails are invalid");
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
 export const Assignments: React.FC<Props> = (_props: Props) => {
   const classes = useStyles();
   const [roles, setRoles] = useState<RoleAssignment[]>([]);
   const [players, setPlayers] = useState<PlayerAssignment[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [displayNotification, setDisplayNotification] = useState<boolean>(
+    false
+  );
 
   return (
     <div className={classes.container}>
@@ -89,10 +141,22 @@ export const Assignments: React.FC<Props> = (_props: Props) => {
         </Button>
       </Card>
       <Card className={classes.assignContainer}>
+        {displayNotification && (
+          <Alert severity={validationErrors.length === 0 ? "info" : "error"}>
+            {validationErrors.length === 0
+              ? "Emails sent!"
+              : validationErrors.join(", ")}
+          </Alert>
+        )}
         <Button
           onClick={() => {
-            console.log(roles);
-            console.log(players);
+            const matchValidation = validateMatches(roles, players);
+            setValidationErrors(matchValidation.errors);
+            if (matchValidation.valid) {
+              console.log(roles);
+              console.log(players);
+            }
+            setDisplayNotification(true);
           }}
         >
           Assign!
