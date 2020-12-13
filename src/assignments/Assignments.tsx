@@ -11,6 +11,7 @@ import {
 } from "@material-ui/core";
 import { validateEmail } from "../common/util/textUtil";
 import { Alert } from "@material-ui/lab";
+import { hasDuplicates } from "../common/util/arrayUtil";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -83,6 +84,36 @@ function validateMatches(
   );
   if (!validEmails) {
     errors.push("Some emails are invalid");
+  }
+
+  const validRoleNames = roles.reduce(
+    (allValidNames, currentRoleAssignment) =>
+      allValidNames && currentRoleAssignment.name !== "",
+    true
+  );
+  if (!validRoleNames) {
+    errors.push("Some role names are blank!");
+  }
+
+  const duplicatedRoleNames = hasDuplicates(roles.map((role) => role.name));
+  if (duplicatedRoleNames) {
+    errors.push("Some role names are duplicated");
+  }
+
+  const validPlayerNames = roles.reduce(
+    (allValidNames, currentPlayerAssignment) =>
+      allValidNames && currentPlayerAssignment.name !== "",
+    true
+  );
+  if (!validPlayerNames) {
+    errors.push("Some role names are blank!");
+  }
+
+  const duplicatedPlayerEmails = hasDuplicates(
+    players.map((player) => player.email)
+  );
+  if (duplicatedPlayerEmails) {
+    errors.push("Some player emails are duplicated");
   }
 
   return {
