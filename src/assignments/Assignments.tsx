@@ -12,6 +12,7 @@ import {
 import { validateEmail } from "../common/util/textUtil";
 import { Alert } from "@material-ui/lab";
 import { hasDuplicates } from "../common/util/arrayUtil";
+import { shuffle, zipWith } from "lodash";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -46,6 +47,10 @@ interface PlayerAssignment {
   name: string;
   email: string;
 }
+
+type Match = PlayerAssignment & {
+  role: string;
+};
 
 interface MatchValidation {
   valid: boolean;
@@ -122,6 +127,26 @@ function validateMatches(
   };
 }
 
+function getRandomizedMatching(
+  roles: RoleAssignment[],
+  players: PlayerAssignment[]
+): Match[] {
+  const roleList = roles.flatMap((role) =>
+    Array.from({ length: role.count }).fill(role.name)
+  );
+  const randomizedPlayerList = shuffle(players);
+  // @ts-ignore
+  return zipWith<string, PlayerAssignment>(
+    // @ts-ignore
+    roleList,
+    randomizedPlayerList,
+    (role: string, player: PlayerAssignment) => ({
+      role,
+      ...player,
+    })
+  );
+}
+
 export const Assignments: React.FC<Props> = (_props: Props) => {
   const classes = useStyles();
   const [roles, setRoles] = useState<RoleAssignment[]>([]);
@@ -184,8 +209,8 @@ export const Assignments: React.FC<Props> = (_props: Props) => {
             const matchValidation = validateMatches(roles, players);
             setValidationErrors(matchValidation.errors);
             if (matchValidation.valid) {
-              console.log(roles);
-              console.log(players);
+              const matches = getRandomizedMatching(roles, players);
+              console.log(matches);
             }
             setDisplayNotification(true);
           }}
