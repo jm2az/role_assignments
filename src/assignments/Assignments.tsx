@@ -176,6 +176,13 @@ export const Assignments: React.FC<Props> = (_props: Props) => {
         >
           Add Role
         </Button>
+        <Button
+          onClick={() => {
+            setRoles(roles.slice(0, roles.length - 1));
+          }}
+        >
+          Delete Role
+        </Button>
       </Card>
       <Card>
         {players.map((player, i) => (
@@ -194,6 +201,13 @@ export const Assignments: React.FC<Props> = (_props: Props) => {
           }}
         >
           Add Player
+        </Button>
+        <Button
+          onClick={() => {
+            setPlayers(players.slice(0, players.length - 1));
+          }}
+        >
+          Delete Player
         </Button>
       </Card>
       <Card className={classes.assignContainer}>
