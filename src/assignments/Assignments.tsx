@@ -11,8 +11,7 @@ import {
 } from "@material-ui/core";
 import { validateEmail } from "../common/util/textUtil";
 import { Alert } from "@material-ui/lab";
-import { hasDuplicates } from "../common/util/arrayUtil";
-import { shuffle, zipWith } from "lodash";
+import { hasDuplicates, shuffle, zipTwoWith } from "../common/util/arrayUtil";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -133,11 +132,9 @@ function getRandomizedMatching(
 ): Match[] {
   const roleList = roles.flatMap((role) =>
     Array.from({ length: role.count }).fill(role.name)
-  );
+  ) as string[];
   const randomizedPlayerList = shuffle(players);
-  // @ts-ignore
-  return zipWith<string, PlayerAssignment>(
-    // @ts-ignore
+  return zipTwoWith(
     roleList,
     randomizedPlayerList,
     (role: string, player: PlayerAssignment) => ({
